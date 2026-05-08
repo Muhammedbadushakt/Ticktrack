@@ -105,37 +105,32 @@ def assign_role():
         return redirect(url_for('auth.login'))
 
     student_id = request.form.get('student_id')
-
     role_name = request.form.get('role')
 
     try:
-
-        Role.query.filter_by(
-            student_id=student_id
-        ).delete()
-
-        role = Role(
+        # check if this role already exists
+        existing = Role.query.filter_by(
             student_id=student_id,
             name=role_name
-        )
+        ).first()
 
-        db.session.add(role)
-
-        db.session.commit()
-
-        flash("Role updated successfully", "success")
+        if not existing:
+            new_role = Role(
+                student_id=student_id,
+                name=role_name
+            )
+            db.session.add(new_role)
+            db.session.commit()
+            flash("Role added successfully", "success")
+        else:
+            flash("Role already exists", "info")
 
     except Exception as e:
-
         db.session.rollback()
-
         print("ROLE ERROR:", e)
-
         flash("Role update failed", "danger")
 
     return redirect(url_for('admin.dashboard'))
-
-
 # ─────────────────────────────────────────────
 # DELETE USER
 # ─────────────────────────────────────────────
