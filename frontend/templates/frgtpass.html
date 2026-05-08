@@ -2,28 +2,86 @@
 
 {% block title %}Forgot Password{% endblock %}
 
+{% block style %}
+<style>
+    :root {
+        --bgr: rgba(12, 58, 104, 0.1);
+    }
+    .page-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 10vh;
+    }
+    .User {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        font-family: 'Rajdhani', sans-serif;
+        width: 100%;
+        max-width: 420px;
+        padding: 1rem;
+    }
+    .User input {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: white;
+        background: var(--bgr);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        outline: none;
+        opacity: 0;
+        animation: slideUp 0.8s ease forwards;
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .User button {
+        font-size: 0.9rem;
+        width: 140px;
+        padding: 12px;
+        cursor: pointer;
+        color: white;
+        background: var(--bgr);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        opacity: 0;
+        animation: slideUp 0.8s ease forwards;
+        animation-delay: 0.6s;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .User input:nth-of-type(1) { animation-delay: 0.2s; }
+    .User input:nth-of-type(2) { animation-delay: 0.4s; }
+    
+    .User input:hover, .User button:hover {
+        box-shadow: 0 0 15px var(--primary);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    #info {
+        color: white;
+        text-align: center;
+        animation: slideUp 0.8s ease forwards;
+        animation-delay: 0.8s;
+        opacity: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
 <div class="cont">
-
     <form class="User" method="POST" action="{{ url_for('auth.forgot_password') }}">
-
-        <input type="text"
-               name="Username"
-               placeholder="Username">
-
-        <input type="email"
-               name="Email"
-               placeholder="Email">
-
-        <button type="submit">
-            SEND OTP
-        </button>
-
+        <input type="text" name="Username" placeholder="Username" required>
+        <input type="email" name="Email" placeholder="Email" required>
+        <button type="submit">SEND OTP</button>
     </form>
-
     <p id="info">{{ msg }}</p>
-
 </div>
-
 {% endblock %}
