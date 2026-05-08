@@ -2,24 +2,24 @@
 
 {% block title %}Verify OTP{% endblock %}
 
+{% block style %}
+<!-- Reuse the same <style> block as above -->
+<style>
+    /* ... (Include CSS from above) ... */
+    .otp-input {
+        text-align: center;
+        letter-spacing: 0.5rem;
+        font-size: 1.5rem !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
 <div class="cont">
-
     <form class="User" method="POST">
-
-        <input type="text"
-               name="otp"
-               placeholder="Enter OTP">
-
-        <button type="submit">
-            VERIFY OTP
-        </button>
-
+        <input type="text" name="otp" class="otp-input" placeholder="ENTER OTP" maxlength="6" required>
+        <button type="submit">VERIFY OTP</button>
     </form>
-
     <p id="info">{{ msg }}</p>
-
 </div>
-
 {% endblock %}
