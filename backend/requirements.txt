@@ -6,3 +6,4 @@ flask_cors
 flask_mail
 psycopg2-binary
 openai
+gunicorn
