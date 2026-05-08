@@ -7,3 +7,4 @@ flask_mail
 psycopg2-binary
 openai
 gunicorn
+python-dotenv
