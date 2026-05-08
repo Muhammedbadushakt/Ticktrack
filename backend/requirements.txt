@@ -8,3 +8,4 @@ psycopg2-binary
 openai
 gunicorn
 python-dotenv
+pwdlib[argon2]
