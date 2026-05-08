@@ -234,9 +234,17 @@ def reset_password():
     )
 @auth_bp.route("/make_admin", methods=["GET", "POST"])
 def make_admin():
-    admin_role = Role(                
-        student_id=25022700,          
-        name="admin"        
-    )
-    db.session.add(admin_role)
-    db.session.commit()
+    existing = Role.query.filter_by(
+        student_id=25022700,
+        name="admin"
+    ).first()
+
+    if not existing:
+        admin_role = Role(
+            student_id=25022700,
+            name="admin"
+        )
+        db.session.add(admin_role)
+        db.session.commit()
+
+    return "Admin role ensured"
