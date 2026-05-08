@@ -1,0 +1,868 @@
+{% extends "base.html" %}
+{% block title %}Class Representative{% endblock %}
+{% block style %}
+<style>
+    .cr-section {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+    }
+
+    .cr-top-nav {
+        display: flex;
+        gap: 2rem;
+        font-size: 1.6rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        justify-content: center;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .nav-item {
+        cursor: pointer;
+        position: relative;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+    }
+
+    .nav-item:hover { opacity: 1; }
+
+    .nav-item.active {
+        opacity: 1;
+        color: var(--primary);
+    }
+
+    .nav-item.active::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 100%;
+        height: 2px;
+        background: var(--primary);
+        box-shadow: 0 0 10px var(--primary);
+    }
+
+    .logout-btn {
+        color: #ff6b6b;
+        text-decoration: none;
+        opacity: 0.7;
+        font-size: 1.6rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .logout-btn:hover {
+        opacity: 1;
+        text-shadow: 0 0 10px #ff6b6b;
+    }
+
+    /* ── Glass wrapper ── */
+    .slider-wrapper {
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .slider-wrapper.glass {
+        max-width: 800px;
+        width: 100%;
+        margin: 2rem auto;
+        align-self: center;
+        border-radius: 18px;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+        height: 560px;
+        overflow: hidden;
+    }
+
+    .slider-track {
+        display: flex;
+        transition: transform 0.6s ease;
+        height: 100%;
+    }
+
+    .slide {
+        width: 100%;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        padding: 1rem 1.2rem;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .slide::-webkit-scrollbar { width: 4px; }
+    .slide::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+    }
+
+    /* ── Shared ── */
+    .slide-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 1.2rem;
+        text-align: center;
+    }
+
+    .sub-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 1rem 0 0.6rem;
+    }
+
+    /* ── Stats ── */
+    .stats-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.2rem;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 120px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .stat-card p {
+        font-size: 0.82rem;
+        opacity: 0.6;
+        margin-top: 4px;
+    }
+
+    /* ── Event rows (dashboard) ── */
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .event-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        transition: 0.3s;
+    }
+
+    .event-row:hover {
+        border-color: var(--primary);
+    }
+
+    .event-row h4 { font-size: 0.95rem; margin-bottom: 2px; }
+    .event-row p  { font-size: 0.8rem; opacity: 0.6; }
+
+    .event-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--primary);
+        background: transparent;
+        color: var(--primary);
+        font-size: 0.75rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.3s;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .action-btn:hover {
+        background: var(--primary);
+        color: #000;
+    }
+
+    .action-btn.danger {
+        border-color: #ff6b6b;
+        color: #ff6b6b;
+    }
+
+    .action-btn.danger:hover {
+        background: #ff6b6b;
+        color: white;
+    }
+
+    /* ── Form fields ── */
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 0.8rem;
+    }
+
+    .field label {
+        font-size: 0.8rem;
+        opacity: 0.6;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.08);
+        color: white;
+        outline: none;
+        font-size: 0.9rem;
+        font-family: inherit;
+        transition: 0.3s;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+        border-color: var(--primary);
+    }
+
+    .field textarea { resize: vertical; min-height: 60px; }
+
+    .field select option { background: #1a1a2e; color: white; }
+
+    /* ── Poll blocks ── */
+    .poll-block {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 0.9rem;
+        margin-bottom: 0.7rem;
+        position: relative;
+    }
+
+    .poll-block .poll-meta {
+        font-size: 0.75rem;
+        opacity: 0.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .remove-poll {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ff6b6b;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 0.72rem;
+        padding: 3px 7px;
+        cursor: pointer;
+    }
+
+    .add-poll-btn {
+        width: 100%;
+        padding: 9px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255,255,255,0.3);
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        font-size: 0.88rem;
+        margin-bottom: 0.8rem;
+        transition: 0.3s;
+        font-family: inherit;
+    }
+
+    .add-poll-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    /* ── Buttons ── */
+    .submit-btn {
+        width: 100%;
+        padding: 11px;
+        border-radius: 12px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: 0.3s;
+        font-family: inherit;
+        margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover {
+        box-shadow: 0 0 20px var(--primary);
+    }
+
+    .btn-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    /* ── Event selector dropdown ── */
+    .event-select {
+        padding: 9px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.08);
+        color: white;
+        width: 100%;
+        font-size: 0.9rem;
+        outline: none;
+        cursor: pointer;
+        font-family: inherit;
+        margin-bottom: 1rem;
+    }
+
+    .event-select option { background: #1a1a2e; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+    }
+
+    th {
+        background: rgba(255,255,255,0.1);
+        padding: 9px 10px;
+        text-align: left;
+        color: var(--primary);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    tr:hover td { background: rgba(255,255,255,0.04); }
+
+    /* ── Divider ── */
+    .divider {
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin: 1rem 0;
+    }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE — Tablet
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+        .cr-section { padding: 1.5rem 1rem; }
+
+        .cr-top-nav {
+            gap: 1.2rem;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logout-btn { font-size: 1.2rem; }
+
+        .slider-wrapper.glass {
+            max-width: 95%;
+            padding: 1rem;
+            border-radius: 16px;
+            height: 520px;
+        }
+
+        .slide { padding: 0.8rem 1rem; }
+    }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE — Mobile
+    ══════════════════════════════════════ */
+    @media (max-width: 600px) {
+        .cr-section { padding: 1rem 0.5rem; }
+
+        .cr-top-nav {
+            gap: 0.6rem;
+            font-size: 0.82rem;
+            margin-bottom: 1rem;
+            flex-wrap: nowrap;
+            justify-content: center;
+        }
+
+        .nav-item { white-space: nowrap; }
+
+        .logout-btn { font-size: 0.82rem; }
+
+        .nav-item.active::after { bottom: -4px; }
+
+        .slider-wrapper.glass {
+            max-width: calc(100% - 1rem);
+            padding: 0.9rem;
+            border-radius: 12px;
+            height: 480px;
+        }
+
+        .slide { padding: 0.5rem 0.6rem; }
+
+        .stat-card h3 { font-size: 1.5rem; }
+
+        .event-row { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE — Very small
+    ══════════════════════════════════════ */
+    @media (max-width: 300px) {
+        .cr-top-nav { gap: 0.3rem; font-size: 0.72rem; }
+
+        .slider-wrapper.glass {
+            max-width: calc(100% - 0.6rem);
+            padding: 0.7rem;
+            height: 440px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cr-section">
+
+    <!-- NAV -->
+    <div class="cr-top-nav">
+        <span class="nav-item active" data-index="0">Dashboard</span>
+        <span class="nav-item" data-index="1">Add Event</span>
+        <span class="nav-item" data-index="2">Responses</span>
+        <span class="nav-item" data-index="3">Edit</span>
+        <span class="nav-item" data-index="4">Export</span>
+        <a href="{{ url_for('classrep.logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- GLASS SLIDER -->
+    <div class="slider-wrapper glass">
+        <div class="slider-track">
+
+            <!-- ══════════════════════════════════
+                 SLIDE 0 — Dashboard
+            ══════════════════════════════════ -->
+            <section class="slide" id="dashboard">
+                <p class="slide-title">👋 Welcome, {{ current_username }}</p>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <h3>{{ events | length }}</h3>
+                        <p>Total Events</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>{{ total_students }}</h3>
+                        <p>Total Students</p>
+                    </div>
+                </div>
+
+                <p class="sub-title">All Events</p>
+                <div class="events-list">
+                    {% for event in events %}
+                    <div class="event-row">
+                        <div>
+                            <h4>{{ event.title }}</h4>
+                            <p>{{ event.description }}</p>
+                        </div>
+                        <div class="event-actions">
+                            <button class="action-btn" onclick="goToResponses('{{ event.id }}')">
+                                Responses
+                            </button>
+                            <button class="action-btn" onclick="goToEdit('{{ event.id }}')">
+                                Edit
+                            </button>
+                            <a class="action-btn"
+                               href="{{ url_for('classrep.dataexport', event_id=event.id) }}">
+                                CSV
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="opacity:0.6;text-align:center;margin-top:1rem;">
+                        No events yet —
+                        <span style="color:var(--primary);cursor:pointer;"
+                              onclick="goToSlide(1)">add one</span>
+                    </p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════
+                 SLIDE 1 — Add Event
+            ══════════════════════════════════ -->
+            <section class="slide" id="addevent">
+                <p class="slide-title">Create New Event</p>
+
+                <form method="POST" action="{{ url_for('classrep.eventadd') }}">
+
+                    <div class="field">
+                        <label>Event Title *</label>
+                        <input type="text" name="title"
+                               placeholder="e.g. Annual Fest Registration" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea name="description"
+                                  placeholder="Brief description..."></textarea>
+                    </div>
+
+                    <p class="sub-title" style="font-size:0.85rem;">
+                        Poll Questions
+                    </p>
+
+                    <div id="pollContainer"></div>
+
+                    <button type="button" class="add-poll-btn" onclick="addPoll()">
+                        + Add Poll Question
+                    </button>
+
+                    <button type="submit" class="submit-btn">
+                        Create Event
+                    </button>
+                </form>
+            </section>
+
+            <!-- ══════════════════════════════════
+                 SLIDE 2 — Responses / Datasheet
+            ══════════════════════════════════ -->
+            <section class="slide" id="responses">
+                <p class="slide-title">View Responses</p>
+
+                <select class="event-select" id="responseEventSelect"
+                        onchange="loadResponses(this.value)">
+                    <option value="">— Select an Event —</option>
+                    {% for event in events %}
+                    <option value="{{ event.id }}"
+                        {% if selected_event_id == event.id %}selected{% endif %}>
+                        {{ event.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                {% if rows %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                {% for poll in sheet_polls %}
+                                <th>{{ poll.question }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.student_id }}</td>
+                                {% for resp in row.responses %}
+                                <td>{{ resp }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <a class="action-btn"
+                   style="display:inline-block;margin-top:0.8rem;"
+                   href="{{ url_for('classrep.dataexport', event_id=selected_event_id) }}">
+                    ⬇ Export CSV
+                </a>
+
+                {% elif selected_event_id %}
+                <p style="opacity:0.6;text-align:center;margin-top:1rem;">
+                    No responses yet for this event.
+                </p>
+                {% endif %}
+            </section>
+
+            <!-- ══════════════════════════════════
+                 SLIDE 3 — Edit Events & Polls
+            ══════════════════════════════════ -->
+            <section class="slide" id="edit">
+                <p class="slide-title">Edit Events & Polls</p>
+
+                <select class="event-select" id="editEventSelect"
+                        onchange="loadEdit(this.value)">
+                    <option value="">— Select an Event —</option>
+                    {% for event in events %}
+                    <option value="{{ event.id }}"
+                        {% if selected_edit_event and selected_edit_event.id == event.id %}selected{% endif %}>
+                        {{ event.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                {% if selected_edit_event %}
+
+                <!-- Update Event -->
+                <form method="POST" action="{{ url_for('classrep.dataedit') }}">
+                    <input type="hidden" name="action" value="update_event">
+                    <input type="hidden" name="event_id" value="{{ selected_edit_event.id }}">
+                    <div class="field">
+                        <label>Title</label>
+                        <input type="text" name="title"
+                               value="{{ selected_edit_event.title }}">
+                    </div>
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea name="description">{{ selected_edit_event.description }}</textarea>
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" class="action-btn">Save</button>
+                    </div>
+                </form>
+
+                <!-- Delete Event -->
+                <form method="POST" action="{{ url_for('classrep.dataedit') }}"
+                      style="margin-top:0.5rem;"
+                      onsubmit="return confirm('Delete this event and all its data?')">
+                    <input type="hidden" name="action" value="delete_event">
+                    <input type="hidden" name="event_id" value="{{ selected_edit_event.id }}">
+                    <button type="submit" class="action-btn danger">Delete Event</button>
+                </form>
+
+                <hr class="divider">
+                <p class="sub-title">Poll Questions</p>
+
+                {% for poll in edit_polls %}
+                <div class="poll-block">
+                    <p class="poll-meta">
+                        #{{ loop.index }} — {{ poll.type }}
+                    </p>
+                    <form method="POST" action="{{ url_for('classrep.dataedit') }}">
+                        <input type="hidden" name="action" value="update_poll">
+                        <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                        <input type="hidden" name="event_id" value="{{ selected_edit_event.id }}">
+                        <div class="field">
+                            <label>Question</label>
+                            <input type="text" name="question" value="{{ poll.question }}">
+                        </div>
+                        <div class="field">
+                            <label>Type</label>
+                            <select name="type">
+                                <option value="radio"
+                                    {% if poll.type=='radio' %}selected{% endif %}>
+                                    Yes / No
+                                </option>
+                                <option value="text"
+                                    {% if poll.type=='text' %}selected{% endif %}>
+                                    Text Answer
+                                </option>
+                                <option value="file"
+                                    {% if poll.type=='file' %}selected{% endif %}>
+                                    File Upload
+                                </option>
+                            </select>
+                        </div>
+                        <div class="btn-row">
+                            <button type="submit" class="action-btn">Update</button>
+                        </div>
+                    </form>
+                    <form method="POST" action="{{ url_for('classrep.dataedit') }}"
+                          style="margin-top:0.4rem;">
+                        <input type="hidden" name="action" value="delete_poll">
+                        <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                        <input type="hidden" name="event_id" value="{{ selected_edit_event.id }}">
+                        <button type="submit" class="action-btn danger">Delete</button>
+                    </form>
+                </div>
+                {% endfor %}
+
+                <!-- Add new poll -->
+                <hr class="divider">
+                <p class="sub-title">Add New Poll</p>
+                <form method="POST" action="{{ url_for('classrep.dataedit') }}">
+                    <input type="hidden" name="action" value="add_poll">
+                    <input type="hidden" name="event_id" value="{{ selected_edit_event.id }}">
+                    <div class="field">
+                        <label>Question</label>
+                        <input type="text" name="question" placeholder="New question...">
+                    </div>
+                    <div class="field">
+                        <label>Type</label>
+                        <select name="type">
+                            <option value="radio">Yes / No</option>
+                            <option value="text">Text Answer</option>
+                            <option value="file">File Upload</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="action-btn">Add Poll</button>
+                </form>
+
+                {% endif %}
+            </section>
+
+            <!-- ══════════════════════════════════
+                 SLIDE 4 — Export
+            ══════════════════════════════════ -->
+            <section class="slide" id="export">
+                <p class="slide-title">Export Responses</p>
+
+                <form method="GET" action="{{ url_for('classrep.dataexport') }}">
+                    <div class="field">
+                        <label>Select Event</label>
+                        <select class="event-select" name="event_id" required>
+                            <option value="">— Select an Event —</option>
+                            {% for event in events %}
+                            <option value="{{ event.id }}">{{ event.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        ⬇ Download CSV
+                    </button>
+                </form>
+
+                <hr class="divider">
+                <p class="sub-title" style="opacity:0.6;font-size:0.85rem;">
+                    Quick Export
+                </p>
+                {% for event in events %}
+                <div class="event-row" style="margin-bottom:0.5rem;">
+                    <div>
+                        <h4>{{ event.title }}</h4>
+                    </div>
+                    <div class="event-actions">
+                        <a class="action-btn"
+                           href="{{ url_for('classrep.dataexport', event_id=event.id) }}">
+                            ⬇ CSV
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+const navItems = document.querySelectorAll('.nav-item[data-index]');
+const slider   = document.querySelector('.slider-track');
+
+// ── Slide to index ──────────────────────────────────────
+function slideTo(index) {
+    navItems.forEach(n => n.classList.remove('active'));
+    const target = document.querySelector(`.nav-item[data-index="${index}"]`);
+    if (target) target.classList.add('active');
+    slider.style.transform = `translateX(-${index * 100}%)`;
+}
+
+// Nav click
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        slideTo(parseInt(item.dataset.index));
+    });
+});
+
+// ── Auto-open slide from server param ──────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    const slide = parseInt("{{ slide }}") || 0;
+    slideTo(slide);
+});
+
+// ── Dashboard quick buttons ─────────────────────────────
+// These redirect to the server with the right params
+// so the server loads the data and tells us which slide to open
+function goToResponses(eventId) {
+    window.location.href =
+        `{{ url_for('classrep.classrep', user=user) }}?sheet_event=${eventId}&slide=2`;
+}
+
+function goToEdit(eventId) {
+    window.location.href =
+        `{{ url_for('classrep.classrep', user=user) }}?edit_event=${eventId}&slide=3`;
+}
+
+// ── Dropdowns inside slides ─────────────────────────────
+function loadResponses(eventId) {
+    if (eventId) {
+        window.location.href =
+            `{{ url_for('classrep.classrep', user=user) }}?sheet_event=${eventId}&slide=2`;
+    }
+}
+
+function loadEdit(eventId) {
+    if (eventId) {
+        window.location.href =
+            `{{ url_for('classrep.classrep', user=user) }}?edit_event=${eventId}&slide=3`;
+    }
+}
+
+// ── Add Poll (dynamic) ──────────────────────────────────
+let pollCount = 0;
+
+function addPoll() {
+    pollCount++;
+    const container = document.getElementById('pollContainer');
+    const block = document.createElement('div');
+    block.className = 'poll-block';
+    block.id = `newpoll-${pollCount}`;
+    block.innerHTML = `
+        <button type="button" class="remove-poll"
+                onclick="document.getElementById('newpoll-${pollCount}').remove()">
+            ✕
+        </button>
+        <div class="field">
+            <label>Question</label>
+            <input type="text" name="question[]" placeholder="Enter question..." required>
+        </div>
+        <div class="field">
+            <label>Type</label>
+            <select name="type[]">
+                <option value="radio">Yes / No</option>
+                <option value="text">Text Answer</option>
+                <option value="file">File Upload</option>
+            </select>
+        </div>
+    `;
+    container.appendChild(block);
+}
+
+// ── Flash messages ──────────────────────────────────────
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, msg in messages %}
+    alert("{{ msg }}");
+{% endfor %}
+{% endwith %}
+</script>
+{% endblock %}
+
+{% block Bgrtitlestrk %}'CR Panel'{% endblock %}
+{% block Bgrtitle %}'CR Panel'{% endblock %}
+{% block Bgrdpt %}'Class Representative'{% endblock %}
+{% block bgr_font_size %}70{% endblock %}
+{% block bgr_font_size_val %}70{% endblock %}

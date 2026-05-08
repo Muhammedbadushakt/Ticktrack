@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Verify OTP{% endblock %}
+
+{% block content %}
+
+<div class="cont">
+
+    <form class="User" method="POST">
+
+        <input type="text"
+               name="otp"
+               placeholder="Enter OTP">
+
+        <button type="submit">
+            VERIFY OTP
+        </button>
+
+    </form>
+
+    <p id="info">{{ msg }}</p>
+
+</div>
+
+{% endblock %}

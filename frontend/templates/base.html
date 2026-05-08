@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{%block title%}{% endblock %}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Rajdhani:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;700&family=Oswald:wght@300;500;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+        :root {
+            --primary: #155d61; /* Cyan for Tech vibe */
+            --secondary: #7000ff; /* Deep Purple */
+            --accent: #ff0055; /* Pink/Red for attitude */
+            --bg-dark: #050505;
+            --text-main: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            overflow: hidden; /* Prevent scrollbars for the background showcase */
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Canvas acts as the wallpaper */
+        #poster-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Overlay for UI elements */
+        .ui-layer {
+            position: fixed;
+            z-index: 10;
+            pointer-events: none; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+        }
+
+        /* Controls (Bottom Right) */
+        .controls {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: fit-content;
+            align-self: flex-end;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.6rem;
+            letter-spacing: 0.8px;
+            transition: all 0.3s ease;
+            width: auto;
+            white-space: inline-block;
+            display: inline-block;
+            
+            height: 32px;
+            transition: all 0.25s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(255, 255, 255, 0.95);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Text Overlay Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            opacity: 0.5;
+            font-size: 0.8rem;
+            max-width: 300px;
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 20;      
+            pointer-events: auto; 
+            height: 100%;
+            padding: 4rem;
+            overflow-y: auto; 
+            padding: 2rem; 
+        }
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+        }
+        .nav-bar {
+            display: grid;
+            grid-template-columns: 1fr auto; /* 🔥 THIS */
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(5, 5, 5, 0.097); /* Slight tint for readability */
+            backdrop-filter: blur(200px);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 500;
+        }
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .controls {
+            justify-self: end; 
+        }
+        .Top{
+            position: relative;
+            z-index: 30;
+            pointer-events:auto;
+        }
+        @media (max-width: 768px) {
+            .nav-bar {
+                transform: scale(0.8);
+                transform-origin: top center;
+                grid-template-rows: 1fr; 
+                gap: 1rem;
+                padding: 0.5rem; 
+                margin-bottom: -1.5rem;
+                text-align: center;
+            }
+
+            .nav-links {
+                flex-direction: row; /* Stack links */
+                gap: 1rem;
+                font-size: 1rem;
+                padding: 20px;
+                padding-top: 20px;
+            }
+
+            .controls {
+               justify-self: center; 
+                transform: scale(0.9);
+                margin-top: 0.5rem;
+            }
+
+            .btn {
+                width: auto;
+                padding: 5px 10px;
+                font-size: 0.6rem;
+            }
+
+            .page-content {
+                padding: 1rem;
+            }
+            .ui-layer{
+                padding: 1rem;
+            }
+        }
+    </style>
+    {% block style%} {%endblock%}
+</head>
+<body>
+
+    <!-- The Canvas Background -->
+    <canvas id="poster-canvas"></canvas>
+<!-- Page Content with Controls -->
+    <div class="Top">
+        <nav class="nav-bar">
+            <div class="nav-links">
+                <a>Home</a>
+                <a>About</a>
+                <a href="{{ url_for('auth.login')}}">Login</a>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="switchVibe">Switch Vibe</button>
+            </div>
+        </nav>
+    </div>
+    <div class="page-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer">
+        <div class="header">
+        </div>
+
+        <div class="instructions">
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="switchVibe">Switch Vibe</button>
+        </div>
+    </div>
+
+    <!-- Toast Element -->
+    <div id="toast" class="toast">Action Completed</div>
+    {%block script %}{%endblock%}
+
+    <script>
+
+        const canvas = document.getElementById('poster-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let animationId;
+        let time = 0;
+        let vibe = 'cyber'; // 'cyber' or 'noir'
+
+        // Mouse interaction
+        const mouse = { x: 0, y: 0 };
+        const targetMouse = { x: 0, y: 0 };
+
+        // Colors configuration
+        const palettes = {
+            cyber: {
+                bgTop: '#0f0c29',
+                bgBottom: '#302b63',
+                accent: '#00f2ff',
+                secondary: '#7000ff',
+                text: '#ffffff',
+                rim: '#00d2ff' 
+            },
+            noir: {
+                bgTop: '#080808',
+                bgBottom: '#1a1a1a',
+                accent: '#ff9900',
+                secondary: '#444',
+                text: '#e0e0e0',
+                rim: '#ffffff'
+            }
+        };
+
+        let currentPalette = palettes.cyber;
+
+        // Resize handler
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Mouse tracking
+        window.addEventListener('mousemove', (e) => {
+            targetMouse.x = e.clientX;
+            targetMouse.y = e.clientY;
+        });
+
+        // Utility: Random Range
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        /**
+         * Class: Particle
+         * Floating dust/code bits for atmosphere
+         */
+        class Particle {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.x = random(0, width);
+                this.y = random(0, height);
+                this.size = random(1, 3);
+                this.speedX = random(-0.5, 0.5);
+                this.speedY = random(-0.5, 0.5);
+                this.life = random(0, 1);
+                this.alpha = random(0, 0.5);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= 0.005;
+
+                if (this.life <= 0 || this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.init();
+                }
+            }
+
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = currentPalette.accent;
+                ctx.globalAlpha = this.alpha * this.life;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+
+        function drawStylizedStudent(x, y, scale, type, xOffset, yOffset) {
+            ctx.save();
+            ctx.translate(x + xOffset, y + yOffset);
+            ctx.scale(scale, scale);
+
+            // Breathing animation (Continuous)
+            const breath = Math.sin(time * 0.002) * 2;
+            ctx.translate(0, breath);
+
+            // Shadow
+            ctx.beginPath();
+            ctx.ellipse(0, 180, 60, 10, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+
+            // Drawing Logic based on type (Attitude Pose 1, Attitude Pose 2)
+            if (type === 1) {
+                // --- Student 1: Leaning against invisible wall, leg crossed, book under arm ---
+                
+                // Legs
+                ctx.strokeStyle = '#1a1a1a';
+                ctx.lineWidth = 12;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-10, 80); // Hip
+                ctx.lineTo(-30, 160); // Standing Leg
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(-10, 80); // Hip
+                ctx.lineTo(30, 140); // Crossed Leg (Knee)
+                ctx.lineTo(50, 160); // Foot
+                ctx.stroke();
+
+                // Torso (Leaning back)
+                ctx.beginPath();
+                ctx.moveTo(-10, 80);
+                ctx.quadraticCurveTo(-30, 40, -20, 0); // Back
+                ctx.lineTo(10, 10); // Shoulder front
+                ctx.lineTo(20, 80); // Front Hip
+                ctx.fillStyle = '#222';
+                ctx.fill();
+                
+                // Rim Lighting (The "Animated" Glow effect)
+                ctx.strokeStyle = currentPalette.rim;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = currentPalette.rim;
+                ctx.stroke();
+                ctx.shadowBlur = 0; // Reset
+
+                // Head
+                ctx.beginPath();
+                ctx.arc(-5, -20, 18, 0, Math.PI * 2);
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fill();
+                
+                // Hair (Anime style spiky)
+                ctx.beginPath();
+                ctx.moveTo(-25, -25);
+                ctx.lineTo(-5, -45);
+                ctx.lineTo(15, -25);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+
+                // Book (Under arm)
+                ctx.fillStyle = currentPalette.secondary;
+                ctx.fillRect(15, 20, 40, 50); // Book cover
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(18, 25, 34, 40); // Pages
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(15, 20); ctx.lineTo(55, 20);
+                ctx.moveTo(15, 70); ctx.lineTo(55, 70);
+                ctx.stroke();
+
+                // Arm holding book
+                ctx.strokeStyle = '#1a1a1a';
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.moveTo(10, 10); // Shoulder
+                ctx.lineTo(25, 30); // Elbow
+                ctx.lineTo(20, 50); // Hand on book
+                ctx.stroke();
+
+            } else {
+                // --- Student 2: Sitting on floor/box, reading book ---
+
+                // Lower Body (Sitting)
+                ctx.fillStyle = '#111';
+                ctx.beginPath();
+                ctx.ellipse(0, 140, 40, 20, 0, 0, Math.PI); // Thighs
+                ctx.fill();
+
+                // Legs
+                ctx.strokeStyle = '#111';
+                ctx.lineWidth = 12;
+                ctx.beginPath();
+                ctx.moveTo(30, 140);
+                ctx.lineTo(70, 150); // Shin
+                ctx.lineTo(80, 150); // Footl
+                ctx.stroke();
+
+                // Torso (Upright)
+                ctx.beginPath();
+                ctx.moveTo(-10, 80);
+                ctx.lineTo(-15, 20); // Back
+                ctx.lineTo(15, 10); // Shoulder
+                ctx.lineTo(25, 80); // Chest
+                ctx.fillStyle = '#222';
+                ctx.fill();
+
+                // Rim Light
+                ctx.strokeStyle = currentPalette.rim;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = currentPalette.rim;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Head
+                ctx.beginPath();
+                ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fill();
+
+                // Book in hand (Open)
+                ctx.save();
+                ctx.translate(20, 40);
+                ctx.rotate(-0.2);
+                ctx.fillStyle = currentPalette.accent; // Bright book
+                ctx.beginPath();
+                ctx.moveTo(0,0);
+                ctx.lineTo(30, -10);
+                ctx.lineTo(30, 20);
+                ctx.lineTo(0, 30);
+                ctx.fill(); // Back cover
+                ctx.fillStyle = '#fff'; // Page
+                ctx.beginPath();
+                ctx.moveTo(2,2);
+                ctx.lineTo(28, -8);
+                ctx.lineTo(28, 18);
+                ctx.lineTo(2, 28);
+                ctx.fill();
+                ctx.restore();
+
+                // Arms holding book
+                ctx.strokeStyle = '#1a1a1a';
+                ctx.lineWidth = 9;
+                ctx.beginPath();
+                ctx.moveTo(15, 10);
+                ctx.lineTo(30, 40); // Arm 1
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-15, 20);
+                ctx.lineTo(25, 35); // Arm 2
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        /**
+         * Main Rendering Loop
+         */
+        const particles = [];
+        for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+        function drawBackgroundGradient() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, currentPalette.bgTop);
+            gradient.addColorStop(1, currentPalette.bgBottom);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawCUSA_Text() {
+            ctx.save();
+            ctx.textAlign = 'center';
+
+            const isMobile = width < 600;
+            const isTablet = width < 900;
+
+            // Push title UP on smaller screens so the glass card doesn't hide it
+            const titleY = isMobile
+                ? height * 0.2
+                : isTablet
+                    ? height * 0.18
+                    : height / 3;
+
+            // ── Main Title: auto-shrink to fit screen ──
+            const titleText = {% block Bgrtitle %}'C.S.A'{% endblock %};
+            const maxTitleWidth = width * 0.85;
+
+            let fontSize = {% block bgr_font_size_val %}100{% endblock %};
+            ctx.font = `700 ${fontSize}px 'Noto Sans Malayalam', Oswald`;
+            while (ctx.measureText(titleText).width > maxTitleWidth && fontSize > 16) {
+                fontSize -= 2;
+                ctx.font = `700 ${fontSize}px 'Noto Sans Malayalam', Oswald`;
+            }
+
+            const glitchX = random(-1, 1) * (Math.random() > 0.9 ? 5 : 0);
+            const glitchY = random(-1, 1) * (Math.random() > 0.9 ? 5 : 0);
+
+            ctx.shadowBlur  = 20;
+            ctx.shadowColor = currentPalette.secondary;
+
+            // Stroke pass
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth   = 2;
+            ctx.strokeText({% block Bgrtitlestrk %}'C.S.A'{% endblock %}, width / 2 + glitchX, titleY + glitchY);
+
+            // Fill pass with gradient
+            const fillGrad = ctx.createLinearGradient(width / 2 - 200, 0, width / 2 + 200, 0);
+            fillGrad.addColorStop(0,   currentPalette.text);
+            fillGrad.addColorStop(0.5, currentPalette.accent);
+            fillGrad.addColorStop(1,   currentPalette.text);
+            ctx.fillStyle = fillGrad;
+            ctx.fillText(titleText, width / 2 + glitchX, titleY + glitchY);
+
+            // ── Department text ──
+            const dptText = {% block Bgrdpt %}'കമ്പ്യൂട്ടർ pillerss....'{% endblock %};
+            let dptSize = Math.max(10, Math.min(22, width * 0.03));
+            ctx.font = `700 ${dptSize}px 'Noto Sans Malayalam', Rajdhani`;
+            while (ctx.measureText(dptText).width > maxTitleWidth && dptSize > 10) {
+                dptSize -= 1;
+                ctx.font = `700 ${dptSize}px 'Noto Sans Malayalam', Rajdhani`;
+            }
+            ctx.shadowBlur  = 10;
+            ctx.shadowColor = currentPalette.accent;
+            ctx.fillStyle   = currentPalette.accent;
+            ctx.fillText(dptText, width / 2, titleY + fontSize * 0.85);
+
+            // ── Subtext: university name — always near bottom, hidden on mobile ──
+            if (!isMobile) {
+                const subFontSize = Math.max(8, Math.min(16, width * 0.022));
+                ctx.font        = `500 ${subFontSize}px Rajdhani`;
+                ctx.fillStyle   = currentPalette.text;
+                ctx.globalAlpha = 0.7;
+                ctx.fillText('COCHIN UNIVERSITY OF SCIENCE AND TECHNOLOGY', width / 2, height - 50);
+                ctx.fillText('KUTTANADU CAMPUS', width / 2, height - 30);
+                ctx.globalAlpha = 1.0;
+            }
+
+            ctx.restore();
+        }
+
+        function animate() {
+            // Smooth mouse follow
+            mouse.x += (targetMouse.x - mouse.x) * 0.05;
+            mouse.y += (targetMouse.y - mouse.y) * 0.05;
+
+            // Clear & BG
+            ctx.clearRect(0, 0, width, height);
+            drawBackgroundGradient();
+
+            time += 16;
+
+            // Particles
+            particles.forEach(p => {
+                p.update();
+                p.draw(ctx);
+            });
+
+            // Draw Students (Positioned at bottom, parallax based on mouse)
+            const parallaxX = (mouse.x - width/2) * 0.02;
+            const parallaxY = (mouse.y - height/2) * 0.02;
+
+            // Student 1 (Left, darker, further back)
+            drawStylizedStudent(width * 0.25, height * 0.75, 1.5, 1, parallaxX * 1.5, parallaxY * 1.5);
+
+            // Student 2 (Right, closer)
+            drawStylizedStudent(width * 0.75, height * 0.85, 1.8, 2, parallaxX * 0.5, parallaxY * 0.5);
+
+            // Text (Foreground, slight parallax)
+            drawCUSA_Text();
+
+            // Vignette for "Dark Style"
+            const grad = ctx.createRadialGradient(width/2, height/2, height * 0.3, width/2, height/2, height);
+            grad.addColorStop(0, 'transparent');
+            grad.addColorStop(1, 'rgba(0,0,0,0.8)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,width,height);
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // --- Interactions ---
+
+        const btnVibe = document.getElementById('switchVibe');
+        const toast = document.getElementById('toast');
+        const root = document.documentElement;
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        btnVibe.addEventListener('click', () => {
+            if (vibe === 'cyber') {
+                vibe = 'noir';
+                currentPalette = palettes.noir;
+                btnVibe.textContent = "Switch to Cyberpunk";
+                showToast("Vibe Changed to Noir");
+                root.style.setProperty('--bgr','rgba(153, 73, 7, 0.1)')
+                document.cookie = "vibe=noir; path=/; max-age=" + 60*60*24*30;
+                root.style.setProperty('--primary', '#ff9900');
+            } else {
+                vibe = 'cyber';
+                currentPalette = palettes.cyber;
+                btnVibe.textContent = "Switch to Noir";
+                showToast("Vibe Changed to Cyberpunk");
+                root.style.setProperty('--bgr','rgba(12, 58, 104, 0.1)')
+                document.cookie = "vibe=cyber; path=/; max-age=" + 60*60*24*30;
+                root.style.setProperty('--primary', '#00f2ff');
+            }
+        });
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        const savedVibe = getCookie('vibe');
+        if (savedVibe && (savedVibe === 'cyber' || savedVibe === 'noir')) {
+            vibe = savedVibe;
+            currentPalette = palettes[vibe];
+            btnVibe.textContent = (vibe === 'cyber') ? "Switch to Noir" : "Switch to Cyberpunk";
+            if(vibe === 'cyber'){
+                root.style.setProperty('--bgr','rgba(12, 58, 104, 0.1)');
+                root.style.setProperty('--primary', '#00f2ff');
+            } else {
+                root.style.setProperty('--bgr','rgba(153, 73, 7, 0.1)');
+                root.style.setProperty('--primary', '#ff9900');
+            }
+        }
+
+        // Start Animation Loop (Always Running)
+        animate();
+    </script>
+</body>
+</html>

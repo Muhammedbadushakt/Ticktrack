@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Forgot Password{% endblock %}
+
+{% block content %}
+
+<div class="cont">
+
+    <form class="User" method="POST" action="{{ url_for('auth.forgot_password') }}">
+
+        <input type="text"
+               name="Username"
+               placeholder="Username">
+
+        <input type="email"
+               name="Email"
+               placeholder="Email">
+
+        <button type="submit">
+            SEND OTP
+        </button>
+
+    </form>
+
+    <p id="info">{{ msg }}</p>
+
+</div>
+
+{% endblock %}

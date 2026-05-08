@@ -1,0 +1,8 @@
+flask
+flask_sqlalchemy
+pwdlib
+werkzeug
+flask_cors
+flask_mail
+psycopg2-binary
+openai
