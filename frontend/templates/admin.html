@@ -208,9 +208,9 @@ select{
                         <td>
 
                             {% if user.student.roles %}
-
-                                {{ user.student.roles[0].name }}
-
+                                {% for role in user.student.roles %}
+                                    <span>{{ role.name }}</span>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
                             {% else %}
 
                                 student
